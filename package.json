@@ -2,9 +2,9 @@
   "name": "pr-rebase-action",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "build": "ncc build index.js"
+    "build": "ncc build index.ts"
   },
   "repository": {
     "type": "git",
