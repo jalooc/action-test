@@ -1,42 +1,44 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import git from 'nodegit'
+import shell from 'shell-exec'
 
-const getLastCommitOidForBranch = (repo, branch) =>
-  repo.getBranchCommit(branch).then(commit => commit.toString())
+const runShellCommand = command =>
+  shell(command)
+    .then(result => {
+      if (result.code) throw new Error(result.stderr)
 
-;(async () => {
-  try {
-    const targetBranch = github.context.payload.pull_request.base.ref
-    const sourceBranch = github.context.payload.pull_request.head.ref
-
-    console.log('Detected target branch:', targetBranch)
-    console.log('Detected source branch:', sourceBranch)
-
-    await git.Repository.open('.').then(async repo => {
-      const [targetBranchLastCommit, sourceBranchLastCommit] = await Promise.all([
-        getLastCommitOidForBranch(repo, targetBranch),
-        getLastCommitOidForBranch(repo, sourceBranch)
-      ])
-
-      console.log('Detected last commit on target branch:', targetBranchLastCommit)
-      console.log('Detected last commit on source branch:', sourceBranchLastCommit)
-
-      const lastCommonCommit = (await git.Merge.base(repo, targetBranchLastCommit, sourceBranchLastCommit)).toString()
-
-      const isBranchRebased = targetBranchLastCommit === lastCommonCommit
-
-      console.log(
-        'Last common commit is:',
-        lastCommonCommit,
-        ', so',
-        isBranchRebased ? 'branch is already rebased' : 'rebase is required',
-      )
-
-      if (!isBranchRebased) core.setFailed(`Branch $${sourceBranch} has to be rebased on ${targetBranch}`)
+      return result.stdout.trim()
     })
 
-  } catch (error) {
-    core.setFailed(error.message)
-  }
-})()
+const getLastCommitForBranch = async branch =>
+  runShellCommand(`git show-ref --heads -s ${branch}`)
+
+const getLastCommonCommitForBranches = async (branch1, branch2) =>
+  runShellCommand(`git merge-base ${branch1} ${branch2}`)
+
+const targetBranch = github.context.payload.pull_request.base.ref
+const sourceBranch = github.context.payload.pull_request.head.ref
+
+console.log('Detected target branch:', targetBranch)
+console.log('Detected source branch:', sourceBranch)
+
+Promise.all([
+  getLastCommitForBranch(targetBranch),
+  getLastCommitForBranch(sourceBranch),
+]).then(([targetBranchLastCommit, sourceBranchLastCommit]) =>
+  getLastCommonCommitForBranches(targetBranch, sourceBranch).then(lastCommonCommit => {
+    console.log('Detected last commit on target branch:', targetBranchLastCommit)
+    console.log('Detected last commit on source branch:', sourceBranchLastCommit)
+
+    const isBranchRebased = targetBranchLastCommit === lastCommonCommit
+
+    console.log(
+      'Last common commit is:',
+      lastCommonCommit,
+      ', so',
+      isBranchRebased ? 'branch is already rebased' : 'rebase is required.',
+    )
+
+    if (!isBranchRebased) core.setFailed(`Branch $${sourceBranch} has to be rebased on ${targetBranch}`)
+  })
+).catch(e => core.setFailed(e.message))

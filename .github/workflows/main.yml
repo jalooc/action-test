@@ -10,4 +10,4 @@ jobs:
     steps:
       - name: Verify if rebase is needed
         id: check
-        uses: jalooc/action-test@v4
+        uses: jalooc/action-test@v9
