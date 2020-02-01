@@ -20,6 +20,6 @@
     "@actions/core": "^1.2.2",
     "@actions/github": "^2.1.0",
     "@zeit/ncc": "^0.21.0",
-    "nodegit": "^0.26.4"
+    "shelljs": "^0.8.3"
   }
 }
