@@ -28286,7 +28286,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const getLastCommitOidForBranch = (repo, branch) => repo.getBranchCommit(branch).then(commit => commit.toString());
-const run = () => __awaiter(undefined, void 0, void 0, function* () {
+(() => __awaiter(undefined, void 0, void 0, function* () {
     try {
         const targetBranch = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.payload.pull_request.base.ref;
         const sourceBranch = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.payload.pull_request.head.ref;
@@ -28309,8 +28309,7 @@ const run = () => __awaiter(undefined, void 0, void 0, function* () {
     catch (error) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
     }
-});
-run();
+}))();
 
 
 /***/ }),

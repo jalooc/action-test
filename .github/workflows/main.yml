@@ -4,15 +4,10 @@ on:
       - master
 
 jobs:
-  hello_world_job:
+  check_if_rebased:
     runs-on: ubuntu-latest
-    name: A job to say hello
+    name: Verify if rebase is needed
     steps:
-      - name: Hello world action step
-        id: hello
-        uses: jalooc/action-test@v2
-        with:
-          who-to-greet: 'Pioter'
-      # Use the output from the `hello` step
-      - name: Get the output time
-        run: echo "The time was ${{ steps.hello.outputs.time }}"
+      - name: Verify if rebase is needed
+        id: check
+        uses: jalooc/action-test@v3
